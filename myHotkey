@@ -1,0 +1,260 @@
+#NoEnv
+#SingleInstance Force
+
+
+; # win
+; ! alt
+; ^ ctrl
+; + shift
+; * 상용구 바로 입력
+; ? 상용구 입력된 문자에 상관없이 입력
+; ~키 그 키도 포함되서 입력가능
+gosub Menu
+
+D1:= 0
+D2:= 0
+D3:= 0
+maxre := 1
+return
+
+
+
+
+; 위 gosub과 같은 이름
+
+Menu:
+
+;Menu,이름,Add,메뉴에 표시할 항목 이름,하이퍼링크 (공백없이)
+
+;아이콘이 필요한 경우 
+
+;Menu,이름,icon,메뉴에 표시할 항목 이름,아이콘 경로,숫자는 해당 파일의 몇 번째 아이콘을 말하며 생략 가능
+
+mapping("A","whale","C:\Program Files (x86)\Naver\Naver Whale\Application\whale.exe")
+mapping("S","code","C:\Users\Administrator\AppData\Local\Programs\Microsoft VS Code\Code.exe")
+mapping("D","notion","C:\Users\Administrator\AppData\Local\Programs\Notion\Notion.exe")
+
+
+return
+
+code: 
+	Run, C:\Users\Administrator\AppData\Local\Programs\Microsoft VS Code\Code.exe
+return
+whale:
+	Run, C:\Program Files (x86)\Naver\Naver Whale\Application\whale.exe
+return
+notion:
+	Run, C:\Users\Administrator\AppData\Local\Programs\Notion\Notion.exezx
+return
+
+; 해당 메뉴 실행 명령(하이퍼 링크로 공백 없이)
+
+#x::       ; 키보드 단축키 부분 
+	Menu,Menu,Show,,
+return
+
+vk06A & vk0DD:: ; 매크로 토글 거꾸로
+{ 
+if(D1 = 0 || D1 = 2) {
+kemap(D1,1)
+}
+else if(D1 = 3) {
+kemap(D1,2)
+}
+else if(D1 = 1) {
+kemap(D1,3)
+} 
+return
+}
+
+vk06F & vk0BB:: ; 매크로 토글
+{
+if(D1 = 0 || D1 = 3){
+kemap(D1,1)
+} 
+else if(D1 = 1) {
+kemap(D1,2)
+}
+else if(D1 = 2) {
+kemap(D1,3)
+}
+return
+}
+
+
+vk06F & vk068:: ; 매크로 종료
+{
+SoundPlay,%A_WorkingDir%\mp3\6.mp3
+MsgBox,0,,매크로 해제,0.5
+D1:= 0
+D2:= 0
+D3:= 0
+}
+return
+
+#if D1 = 1 ; 1번 매크로시 실행할 동작
+
+Numpad7:: ActiveingKey("PotPlayer64","{left}") 
+; 프로그램을 활성화하고 키를 누른후 다시 비활성화 
+Numpad9:: ActiveingKey("PotPlayer64","{right}")
+
+Numpad8:: ActiveingKey("PotPlayer64","{space}")
+Numpad4:: OpenWindowActive("Notion.exe","C:\Users\Administrator\AppData\Local\Programs\Notion\Notion.exe")
+; 프로그램을 활성화,최소화, 만약 실행되지 않았다면 실행
+Numpad5:: OpenWindowActive("code.exe","C:\Users\Administrator\AppData\Local\Programs\Microsoft VS Code\Code.exe")    
+Numpad6:: OpenWindowActive("whale.exe","C:\Program Files (x86)\Naver\Naver Whale\Application\whale.exe")
+Numpad1:: #2
+
+vk06B:: ; +키 창 최대화, 원상복구
+WinGetPos,
+if (maxre) {
+    WinGetActiveTitle, Title
+    WinMaximize,A 
+    maxre = 0
+} else if (maxre = 0) {
+    WinRestore,A
+    maxre = 1
+}
+return
+
+#if D1 = 2 ; 2번 매크로시 실행동작
+Numpad9:: Send {Volume_Up}
+Numpad6:: Send {Volume_Down}
+
+Numpad1:: WindowKeyPress("whale.exe","!{left}") 
+; 프로그램이 활성화 되있을시 키를 누름 , 각각 앞으로가기 뒤로가기 대응
+Numpad3:: WindowKeyPress("whale.exe","!{right}")
+
+Numpad5:: WheelUp
+Numpad2:: WheelDown
+
+NumPad7:: 
+If (toggle1)
+{
+	SetTimer, Cursor, Off
+	DllCall("ClipCursor", "Int", 0)
+}
+Else
+{
+	SetTimer, Cursor, On
+}
+toggle1 := !toggle1
+return
+
+Cursor:
+ClipCursor(0,0, A_ScreenWidth, A_ScreenHeight)
+
+return
+Numpad8:: OpenWindowActive("KakaoTalk.exe", "C:\Program Files (x86)\Kakao\KakaoTalk\KakaoTalk.exe")
+Numpad4:: Send !{F4} ; 활성화된 창 종료
+NumpadDot:: keyhistory
+
+vk0BD::  ; 활성화된 창의 정보 얻어오기
+WinGetActiveTitle, Title
+CoordMode, pixel,Screen
+WinGetPos,  pos_x,pos_y,width,height,%Title%
+MsgBox,0,,'%pos_x%,%pos_y%,%width%,%height%,%Title%'
+return
+
+#if D1 = 3 ; 3번 매크로시 실행동작, 아직 안짯으니 원하는거 넣어도 됨
+Numpad1::
+#include cursor.ahk
+
+
+Numpad0:: Reload
+
+
+return
+
+#if
+;------------------------------------------------------------
+
+;기본상용구
+
+:*?:->::→
+:*?:<-::←
+
+
+;-----------------------------------------------------------
+
+;리팩토링용 코드
+
+ClipCursor(x1, y1, x2, y2)	; 마우스 가두는 함수
+{
+	VarSetCapacity(rect, 16, 0)
+	args := x1 . "|" . y1 . "|" . x2 . "|" . y2
+	Loop, Parse, args, |
+		NumPut(A_LoopField, &rect, (a_index - 1) * 4)
+	DllCall("ClipCursor", "Str", rect)
+	Return
+}
+
+mapping(key,name,window) {
+Menu,Menu,Add,%key%-%name%,%name%
+Menu,Menu,icon,%key%-%name%,%window%
+}
+
+kemap(ByRef D1,ByRef key) {
+SoundPlay,%A_WorkingDir%\mp3\%key%.mp3
+MsgBox,0,,매크로 %key% Active,0.5
+D1 := key
+D2 := 0
+D3 := 0
+} 
+
+
+WindowKeyPress(window,key){
+    IfWinActive,ahk_exe %window%
+    {
+        send, %key%
+        return
+    } 
+    }
+    
+ActiveingKey(window,key,isclick := false){
+    IfWinExist,ahk_class %window%
+        {
+    IfWinNotActive,ahk_class %window%
+        {
+            WinGetActiveTitle, Title
+            WinActivate
+            if(%isclick%) { 
+                MouseGetPos vx,vy
+                MouseClick Left, 1565,245,1,07
+                MouseMove %vx%, %vy%
+            }
+            Send, %key%
+            WinActivate, %Title%
+            return
+        } else { 
+        Send, %key%
+        return
+        }
+    }  
+}    
+    
+OpenWindowActive(Window,AppAdress){
+    IfWinExist,ahk_exe %Window%
+    {        
+        IfWinNotActive,ahk_exe %Window%
+        {
+            WinActivate
+            return
+        } else { 
+            WinMinimize
+            Return
+        }
+    } else {
+    Run %AppAdress% UseErrorLevel
+    If ErrorLevel
+        {
+            Msgbox, File %AppAddress% Not Found
+            Return
+        }
+        else
+        {
+            WinActivate
+            Return
+        }
+    }
+}
